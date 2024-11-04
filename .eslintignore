@@ -1,0 +1,6 @@
+**/*.js
+node_modules
+dist
+entities
+migrations
+generatePassword.ts
