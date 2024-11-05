@@ -1,6 +1,7 @@
+import { Usuario } from '../../database/entities';
 import { justificativaRepository, pedidoRepository } from '../../database/repositories';
 
-export const createById = async (id: number, conteudo: string): Promise<number | Error> => {
+export const createById = async (id: number, conteudo: string, usuario: Usuario): Promise<number | Error> => {
 
     try {
 
@@ -8,6 +9,10 @@ export const createById = async (id: number, conteudo: string): Promise<number |
 
         if (!pedido) {
             return new Error('Pedido não encontrado');
+        }
+
+        if (pedido.vendedor != usuario.codigo_vendedor) {
+            return new Error('Usuário não autorizado a cadastrar esta justificativa');
         }
 
         const newJustificativa = justificativaRepository.create({

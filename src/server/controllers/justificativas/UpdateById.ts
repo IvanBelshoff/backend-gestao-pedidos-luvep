@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as yup from 'yup';
 
-import { validation } from '../../shared/middlewares';
-import {  IBodyUpdateById, IParamsIdGlobal } from '../../shared/interfaces';
+import { decoder, validation } from '../../shared/middlewares';
+import { IBodyUpdateById, IParamsIdGlobal } from '../../shared/interfaces';
 import { JustificativasProvider } from '../../models/justificativas';
+import { ParsedQs } from 'qs';
 
 export const updataByIdValidation = validation((getSchema) => ({
     body: getSchema<IBodyUpdateById>(yup.object().shape({
@@ -25,7 +26,19 @@ export const updateById = async (req: Request<IParamsIdGlobal, {}, IBodyUpdateBy
         });
     }
 
-    const result = await JustificativasProvider.updateById(req.params.id, req.body);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const usuario = await decoder(req as Request<{}, {}, {}, ParsedQs, Record<string, any>>);
+
+    if (!usuario) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            errors: {
+                default: 'O usuário precisa ser informado'
+            }
+        });
+    }
+
+    const result = await JustificativasProvider.updateById(req.params.id, req.body, usuario);
 
     if (result instanceof Error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

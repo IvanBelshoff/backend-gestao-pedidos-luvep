@@ -1,6 +1,6 @@
-import { Usuario } from "../../../database/entities";
+import { Usuario } from '../../../database/entities';
 
-export interface IBodyCreateUsuarios extends Omit<Usuario, 'id' | 'data_criacao' | 'data_atualizacao' | 'regra' | 'permissao' | 'foto'> { id_copy_regras?: number }
+export interface IBodyCreateUsuarios extends Omit<Usuario, 'id' | 'data_criacao' | 'data_atualizacao' | 'regra' | 'permissao' | 'foto' | 'parent' | 'children'> { }
 
 export interface IQueryGetAllUsuarios {
     page?: number;
@@ -22,7 +22,11 @@ export interface IQueryRecoverPasswordUsuarios {
 
 export interface IBodyUpdateRolesAndPermissionsByIdUsuarios { regras?: number[], permissoes?: number[] }
 
-export interface IBodyUpdateByIdUsuarios extends Omit<Usuario, 'id' | 'data_criacao' | 'data_atualizacao' | 'regra' | 'permissao' | 'foto'> { id_copy_regras?: number }
+export interface IBodyUpdateByIdUsuarios extends Omit<Usuario, 'id' | 'data_criacao' | 'data_atualizacao' | 'regra' | 'permissao' | 'foto' | 'parent' | 'children'> { }
+
+export interface IBodychildren { children?: number[] }
+
+export interface IBodySuperior { parent?: number }
 
 export interface IEmailValidaEmailUsuario {
     email?: string
@@ -31,4 +35,17 @@ export interface IEmailValidaEmailUsuario {
 export interface IBodyCopyRolesAndPermissionsByIdUsuarios {
     id_usuario: number
     id_copiado: number
+}
+
+export interface IQueryGetAll {
+    page?: number;
+    limit?: number;
+    localidade?: string;
+    vinculos?: 'superior' | 'subordinados' | 'nenhum'
+    filter?: string;
+}
+
+export interface IQueryGetchildrenById {
+    children?: string;
+    childrenDisponiveis?: string
 }

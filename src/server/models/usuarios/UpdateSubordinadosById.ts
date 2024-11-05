@@ -1,14 +1,14 @@
 import { In } from 'typeorm';
+import { usuarioRepository } from '../../database/repositories';
+import { Usuario } from '../../database/entities';
 import { IBodychildren } from '../../shared/interfaces';
-import { funcionarioRepository } from '../../database/repositories/funcionarioRepository';
-import { Funcionario } from '../../database/entities';
 
 
-const atualizachildren = async (id: number, children: number[]): Promise<[] | Funcionario[] | Error> => {
+const atualizachildren = async (id: number, children: number[]): Promise<[] | Usuario[] | Error> => {
 
     const filtrochildren: number[] = [];
 
-    const funcionario = await funcionarioRepository.findOne({
+    const usuario = await usuarioRepository.findOne({
         relations: {
             parent: true,
             children: true
@@ -18,13 +18,13 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Fu
         }
     });
 
-    if (funcionario) {
+    if (usuario) {
 
-        const quantidadeFuncionarioschildrenRF = children.length;
+        const quantidadeUsuarioschildrenRF = children.length;
 
-        for (let i = 0; i <= (quantidadeFuncionarioschildrenRF - 1); i++) {
+        for (let i = 0; i <= (quantidadeUsuarioschildrenRF - 1); i++) {
 
-            const funcionariosFiltrados = await funcionarioRepository.findOne({
+            const usuariosFiltrados = await usuarioRepository.findOne({
                 relations: {
                     children: true,
                     parent: true
@@ -34,51 +34,51 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Fu
                 }
             });
 
-            if (funcionariosFiltrados) {
+            if (usuariosFiltrados) {
 
-                if (funcionariosFiltrados.id == funcionario.id) {
+                if (usuariosFiltrados.id == usuario.id) {
                     return new Error('Você não pode adicionar você mesmo como subordinado');
                 }
 
-                if (funcionariosFiltrados.id == funcionario.parent?.id) {
-                    return new Error(`Funcionario ${funcionario.nome} não pode ser adicionado como subordinado, pois ele é seu superior`);
+                if (usuariosFiltrados.id == usuario.parent?.id) {
+                    return new Error(`Usuario ${usuario.nome} não pode ser adicionado como subordinado, pois ele é seu superior`);
                 }
 
-                if (funcionariosFiltrados.ativo == false) {
+                if (usuariosFiltrados.bloqueado == false) {
                     return new Error('Você não pode adicionar um funcionário desligado como seu superior');
                 }
 
-                if (funcionariosFiltrados.parent) {
-                    if (funcionariosFiltrados.parent.id == funcionario.id) {
+                if (usuariosFiltrados.parent) {
+                    if (usuariosFiltrados.parent.id == usuario.id) {
                         filtrochildren.push(
-                            funcionariosFiltrados.id
+                            usuariosFiltrados.id
                         );
                     } else {
-                        return new Error(`Funcionario ${funcionariosFiltrados.nome} já possui um gestor: ${funcionariosFiltrados.parent.nome}`);
+                        return new Error(`Usuario ${usuariosFiltrados.nome} já possui um gestor: ${usuariosFiltrados.parent.nome}`);
                     }
                 }
 
-                if (!funcionariosFiltrados?.parent) {
+                if (!usuariosFiltrados?.parent) {
                     filtrochildren.push(
-                        funcionariosFiltrados.id
+                        usuariosFiltrados.id
                     );
                 }
             }
         }
 
-        const funcionariosRF = await funcionarioRepository.findAndCount({ where: { id: In(filtrochildren) } });
+        const usuariosRF = await usuarioRepository.findAndCount({ where: { id: In(filtrochildren) } });
 
-        const childrenBD = funcionario.children;
+        const childrenBD = usuario.children;
 
         const idschildrenBD = new Set(childrenBD.map(f => f.id));
 
-        const idsFuncionariosRF = new Set(funcionariosRF[0].map(f => f.id));
+        const idsUsuariosRF = new Set(usuariosRF[0].map(f => f.id));
 
-        const mantidos = [...idschildrenBD].filter(id => idsFuncionariosRF.has(id));
+        const mantidos = [...idschildrenBD].filter(id => idsUsuariosRF.has(id));
 
-        const adicionados = [...idsFuncionariosRF].filter(id => !idschildrenBD.has(id));
+        const adicionados = [...idsUsuariosRF].filter(id => !idschildrenBD.has(id));
 
-        const removidos = [...idschildrenBD].filter(id => !idsFuncionariosRF.has(id));
+        const removidos = [...idschildrenBD].filter(id => !idsUsuariosRF.has(id));
 
         console.log('Mantidos:', mantidos.length, '(' + mantidos.join(',') + ')');
         console.log('Adicionados:', adicionados.length, '(' + adicionados.join(',') + ')');
@@ -86,7 +86,7 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Fu
 
         const idsNovoschildren = [...mantidos, ...adicionados];
 
-        const novoschildren = await funcionarioRepository.find({ where: { id: In(idsNovoschildren) } });
+        const novoschildren = await usuarioRepository.find({ where: { id: In(idsNovoschildren) } });
 
         return novoschildren;
 
@@ -96,11 +96,11 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Fu
 
 };
 
-export const updateSubordinadosById = async (id: number, funcionario: IBodychildren): Promise<void | Error> => {
+export const updateSubordinadosById = async (id: number, usuario: IBodychildren): Promise<void | Error> => {
 
     try {
 
-        const funcionarioCadastrado = await funcionarioRepository.findOne({
+        const usuarioCadastrado = await usuarioRepository.findOne({
             relations: {
                 parent: true,
                 children: true
@@ -110,15 +110,15 @@ export const updateSubordinadosById = async (id: number, funcionario: IBodychild
             }
         });
 
-        if (!funcionarioCadastrado) {
-            return new Error('Funcionario não localizado');
+        if (!usuarioCadastrado) {
+            return new Error('Usuario não localizado');
         }
 
-        const idschildren = funcionarioCadastrado?.children.map(subord => subord.id) || [];
+        const idschildren = usuarioCadastrado?.children.map(subord => subord.id) || [];
 
-        const { children = funcionario.children || idschildren } = funcionario;
+        const { children = usuario.children || idschildren } = usuario;
 
-        const childrenFuncionarios = await funcionarioRepository.findAndCount({
+        const childrenUsuarios = await usuarioRepository.findAndCount({
             relations: {
                 children: true
             }, where: {
@@ -126,19 +126,19 @@ export const updateSubordinadosById = async (id: number, funcionario: IBodychild
             }
         });
 
-        if (childrenFuncionarios[1] > 0) {
-            funcionarioCadastrado.children = childrenFuncionarios[0];
+        if (childrenUsuarios[1] > 0) {
+            usuarioCadastrado.children = childrenUsuarios[0];
         }
 
-        if (funcionario.children) {
+        if (usuario.children) {
 
-            if (childrenFuncionarios[1] !== funcionario.children?.length) {
+            if (childrenUsuarios[1] !== usuario.children?.length) {
 
                 return new Error('Algum subordinado não foi encontrado.');
 
             }
 
-            const childrenAtualizados = await atualizachildren(id, funcionario.children);
+            const childrenAtualizados = await atualizachildren(id, usuario.children);
 
             if (childrenAtualizados instanceof Error) {
 
@@ -147,11 +147,11 @@ export const updateSubordinadosById = async (id: number, funcionario: IBodychild
             }
             if (childrenAtualizados) {
 
-                funcionarioCadastrado.children = childrenAtualizados;
+                usuarioCadastrado.children = childrenAtualizados;
 
             }
         }
-        await funcionarioRepository.save(funcionarioCadastrado);
+        await usuarioRepository.save(usuarioCadastrado);
 
     } catch (error) {
         console.log(error);

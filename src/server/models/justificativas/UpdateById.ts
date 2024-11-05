@@ -1,11 +1,15 @@
 import { IBodyUpdateById } from '../../shared/interfaces';
 import { justificativaRepository } from '../../database/repositories';
+import { Usuario } from '../../database/entities';
 
-export const updateById = async (id: number, justificativa: IBodyUpdateById): Promise<void | Error> => {
+export const updateById = async (id: number, justificativa: IBodyUpdateById, usuario: Usuario): Promise<void | Error> => {
 
     try {
 
         const justificativaCadastrada = await justificativaRepository.findOne({
+            relations: {
+                pedido: true
+            },
             where: {
                 id: id
             }
@@ -13,6 +17,10 @@ export const updateById = async (id: number, justificativa: IBodyUpdateById): Pr
 
         if (!justificativaCadastrada) {
             return new Error('Justificativa não existe');
+        }
+
+        if (justificativaCadastrada.pedido.vendedor != usuario.codigo_vendedor) {
+            return new Error('Usuário não autorizado a atualizar esta justificativa');
         }
 
         const { conteudo = justificativa.conteudo || justificativaCadastrada.conteudo } = justificativa;

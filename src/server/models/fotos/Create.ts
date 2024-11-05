@@ -7,14 +7,13 @@ interface IFile {
     originalname: string
     mimetype: string
     size: number
-    tipo_foto: 'colaboradores' | 'usuarios'
     width?: number,
     height?: number
 }
 
 export const create = async (foto: IFile): Promise<number | Error> => {
 
-    const { filename, mimetype, originalname, path, size, tipo_foto, width, height } = foto;
+    const { filename, mimetype, originalname, path, size, width, height } = foto;
 
     try {
 
@@ -35,7 +34,7 @@ export const create = async (foto: IFile): Promise<number | Error> => {
             tamanho: size,
             width: width,
             height: height,
-            url: `http://${process.env.HOST}:${process.env.PORT}/uploads/fotos/${tipo_foto}/${filename}`,
+            url: `http://${process.env.HOST}:${process.env.PORT}/uploads/fotos/usuarios/${filename}`,
             tipo: mime.extension(String(mimetype))
         });
 

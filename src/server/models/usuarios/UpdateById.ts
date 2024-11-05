@@ -1,45 +1,10 @@
+import { Foto } from '../../database/entities';
 import { usuarioRepository } from '../../database/repositories';
-
-import { FotosProvider } from '../fotos';
-import { Foto, Permissao, Regra } from '../../database/entities';
-import { PasswordCrypto } from '../../shared/services';
 import { IBodyUpdateByIdUsuarios } from '../../shared/interfaces';
+import { PasswordCrypto } from '../../shared/services';
+import { FotosProvider } from '../fotos';
 
-const regrasCopiadas = async (id_usuario: number, id?: number): Promise<Error | { regras: Regra[]; permissoes: Permissao[]; }> => {
-
-    if (id) {
-
-        if (id === id_usuario) {
-            return new Error('regras e permissoes não podem ser copiadas para o mesmo usuario');
-        }
-
-        const usuarioCopiado = await usuarioRepository.findOne({
-            relations: {
-                regra: true,
-                permissao: true
-            },
-            where: {
-                id: id
-            }
-        });
-
-        if (!usuarioCopiado) {
-            return new Error('Usuário copiado não localizado');
-        }
-
-        return {
-            regras: usuarioCopiado.regra || [],
-            permissoes: usuarioCopiado.permissao || []
-        };
-    }
-
-    return {
-        regras: [],
-        permissoes: []
-    };
-};
-
-export const updateById = async (id: number, usuario: IBodyUpdateByIdUsuarios, foto?: Omit<Foto, 'id' | 'data_atualizacao' | 'data_criacao' | 'colaborador' | 'usuario' | 'url'>): Promise<void | Error> => {
+export const updateById = async (id: number, usuario: IBodyUpdateByIdUsuarios, foto?: Omit<Foto, 'id' | 'data_atualizacao' | 'data_criacao' | 'usuario' | 'url'>): Promise<void | Error> => {
 
     try {
 
@@ -52,6 +17,10 @@ export const updateById = async (id: number, usuario: IBodyUpdateByIdUsuarios, f
         }
 
         const usuarioCadastrado = await usuarioRepository.findOne({
+            relations: {
+                parent: true,
+                children: true
+            },
             where: {
                 id: id
             }
@@ -60,47 +29,45 @@ export const updateById = async (id: number, usuario: IBodyUpdateByIdUsuarios, f
         if (!usuarioCadastrado) {
             return new Error('Funcionario não localizado');
         }
-
-        if (usuario.senha) {
+        
+        if (usuario?.senha) {
             const senhaHash = await PasswordCrypto.hashPassword(usuario.senha);
             usuarioCadastrado.senha = senhaHash;
         }
 
         const {
-            bloqueado = usuario.bloqueado || usuarioCadastrado.bloqueado,
-            email = usuario.email || usuarioCadastrado.email,
             nome = usuario.nome || usuarioCadastrado.nome,
             sobrenome = usuario.sobrenome || usuarioCadastrado.sobrenome,
-            usuario_atualizador = usuario.usuario_atualizador || usuarioCadastrado.usuario_atualizador,
-            id_copy_regras
+            email = usuario.email || usuarioCadastrado.email,
+            localidade = usuario.localidade || usuarioCadastrado.localidade,
+            codigo_vendedor = usuario.codigo_vendedor || usuarioCadastrado.codigo_vendedor,
+            bloqueado = usuario?.bloqueado || usuarioCadastrado.bloqueado,
+            tipo_usuario = usuario.tipo_usuario || usuarioCadastrado.tipo_usuario
         } = usuario;
 
-        if (id_copy_regras) {
+        if (usuarioCadastrado.bloqueado == true && (usuario.bloqueado == false || String(usuario.bloqueado) == 'false')) {
 
-            const regrasEPermissoes = await regrasCopiadas(id, id_copy_regras);
-
-            if (regrasEPermissoes instanceof Error) {
-
-                return new Error(regrasEPermissoes.message);
-
+            // Desvincula o parent do funcionário, se existir
+            if (usuarioCadastrado.parent) {
+                usuarioCadastrado.parent = null;
             }
 
-            usuarioCadastrado.regra = regrasEPermissoes.regras;
-            usuarioCadastrado.permissao = regrasEPermissoes.permissoes;
+            // Desvincula os children do funcionário
+            if (usuarioCadastrado.children && usuarioCadastrado.children.length > 0) {
 
+                usuarioCadastrado.children = [];
+            }
         }
 
         usuarioCadastrado.nome = nome,
-            usuarioCadastrado.sobrenome = sobrenome,
-            usuarioCadastrado.email = email,
-            usuarioCadastrado.bloqueado = String(bloqueado) == 'false' ? false : true,
-            usuarioCadastrado.usuario_atualizador = usuario_atualizador
+        usuarioCadastrado.sobrenome = sobrenome,
+        usuarioCadastrado.bloqueado = String(bloqueado) == 'false' ? false : true,
+        usuarioCadastrado.email = email,
+        usuarioCadastrado.codigo_vendedor = codigo_vendedor,
+        usuarioCadastrado.localidade = localidade,
+        usuarioCadastrado.tipo_usuario = tipo_usuario,
 
-        const atualizaUsuario = await usuarioRepository.save(usuarioCadastrado);
-
-        if (atualizaUsuario instanceof Error) {
-            return new Error(atualizaUsuario.message);
-        }
+        await usuarioRepository.save(usuarioCadastrado);
 
         return;
 

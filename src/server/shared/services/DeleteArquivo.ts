@@ -1,81 +1,28 @@
-import * as fs from 'fs';
-import { fotoRepository } from '../../database/repositories';
+import * as fs from 'fs/promises';
 
-export const deleteArquivo = async (local: String, nome: String, excluirNoBanco = true): Promise<void | Error> => {
-
+export const deleteArquivoLocal = async (path: string, filename: string): Promise<void | Error> => {
     try {
-
-        if (excluirNoBanco == true) {
-
-            if (fs.existsSync(String(local)) && nome != 'profile.jpg') {
-
-                fs.unlink(String(local), (erro) => {
-                    if (erro) {
-                        console.log(erro);
-                        return new Error(erro.message);
-
-                    }
-                    console.log('\nFoto original foi excluida localmente');
-                });
-            }
-
-            if (!fs.existsSync(String(local))) {
-                console.log('\nFoto original não foi localizada');
-            }
-
-            if (nome == 'profile.jpg') {
-                console.log('\nFoto padrao não pode ser excluida');
-            }
-
-            const foto = await fotoRepository.findOne({
-                where: {
-                    originalname: String(nome)
-                }
-            });
-
-            if (foto) {
-
-                const fotoDelete = await fotoRepository.delete({ id: foto.id });
-
-                if (fotoDelete instanceof Error) {
-                    console.log('Erro ao excluir foto do banco:' + fotoDelete.message);
-                    return new Error(fotoDelete.message);
-                }
-
-                console.log('\nFoto original foi excluida no banco de dados\n');
-
-                return;
-            }
-
-        } else {
-
-            if (fs.existsSync(String(local)) && nome != 'profile.jpg') {
-
-                fs.unlink(String(local), (erro) => {
-                    if (erro) {
-                        console.log(erro);
-                        return new Error(erro.message);
-
-                    }
-                    console.log('\nFoto original foi excluida localmente');
-                });
-            }
-
-            if (!fs.existsSync(String(local))) {
-                console.log('\nFoto original não foi localizada');
-            }
-
-            if (nome == 'profile.jpg') {
-                console.log('\nFoto padrao não pode ser excluida');
-            }
-
+        // Verifica se o arquivo é 'profile.jpg', caso seja, não permite a exclusão
+        if (filename === 'profile.jpg') {
+            console.log('\nFoto padrão não pode ser excluída localmente');
             return;
         }
 
+        // Verifica se o arquivo existe
+        const fileExists = await fs.access(path).then(() => true).catch(() => false);
+
+        if (!fileExists) {
+            console.log('\nFoto original não foi localizada');
+            return;
+        }
+
+        // Tenta excluir o arquivo
+        await fs.unlink(path);
+
+        console.log('\nFoto original foi excluída localmente');
 
     } catch (error) {
-        console.log(error);
-        return new Error(error as string);
+        console.error('Erro ao tentar excluir o arquivo:', error);
+        return new Error(`Erro ao tentar excluir o arquivo: ${error}`);
     }
-
 };

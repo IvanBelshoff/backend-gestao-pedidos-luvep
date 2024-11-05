@@ -1,4 +1,4 @@
-import multer, { StorageEngine } from "multer";
+import multer, { StorageEngine } from 'multer';
 import { Request } from 'express';
 
 export interface IParamsIdGlobal { id?: number }
@@ -27,4 +27,14 @@ export interface IPermissao {
 export interface IRegra {
     nome: string;
     permissoes: IPermissao[];
+}
+
+export interface IBody {
+    email?: string,
+}
+
+export interface IResponseErros {
+    status: number;
+    default?: string;
+    body?: IBody;
 }

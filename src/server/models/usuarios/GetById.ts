@@ -1,25 +1,26 @@
 import { Usuario } from '../../database/entities';
 import { usuarioRepository } from '../../database/repositories';
 
+
 export const getById = async (id: number): Promise<Usuario | Error> => {
 
     try {
         const result = await usuarioRepository.findOne({
             relations: {
-                regra: true,
-                permissao: true,
-                foto: true
+                foto: true,
+                parent: true,
+                children: true
             },
             where: {
                 id: id
             }
         });
 
-        if (!result) {
-            return new Error('Usuario não encontrado');
+        if (result) {
+            return result;
         }
 
-        return result;
+        return new Error('Registro não encontrado');
 
     } catch (error) {
         console.log(error);

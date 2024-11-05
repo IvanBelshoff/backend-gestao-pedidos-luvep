@@ -21,7 +21,7 @@ export class PedidoVolvo {
     public static async find(): Promise<PedidoVolvo[]> {
 
         const queryServicos: PedidoVolvo[] = await in_gds_STG_THF010_VRepository.createQueryBuilder('in_gds_STG_THF010_V')
-            .select("CONVERT(VARCHAR(50), HASHBYTES('SHA1', CONCAT('Serviços', in_gds_STG_THF010_V.AJGNN2, in_gds_STG_THF010_V.AJORNO, in_gds_STG_THF010_V.AJCNUM, in_gds_STG_THF010_V.AJCA30, CONVERT(VARCHAR, in_gds_STG_THF010_V.AJORDT, 103), in_gds_STG_THF010_V.AJNMI1, in_gds_STG_THF010_V.AJCHNO, in_gds_STG_THF010_V.AJDPNO, in_gds_STG_THF010_V.AJSRCD)), 2)", "ID")
+            .select("CONVERT(VARCHAR(50), HASHBYTES('SHA1', CONCAT('Serviços', in_gds_STG_THF010_V.AJGNN2, in_gds_STG_THF010_V.AJORNO, CONVERT(VARCHAR, in_gds_STG_THF010_V.AJORDT, 103))), 2)", "ID")
             .addSelect("'Serviços'", "TIPO")
             .addSelect("in_gds_STG_THF010_V.AJGNN2", "FILIAL")
             .addSelect("in_gds_STG_THF010_V.AJORNO", "PEDIDO")
@@ -49,7 +49,7 @@ export class PedidoVolvo {
             .getRawMany();
 
         const queryPecas: PedidoVolvo[] = await in_gds_STG_THF010_VRepository.createQueryBuilder('in_gds_STG_THF010_V')
-            .select("CONVERT(VARCHAR(50), HASHBYTES('SHA1', CONCAT('Peças', in_gds_STG_THF010_V.AJGNN2, in_gds_STG_THF010_V.AJORNO, in_gds_STG_THF010_V.AJCNUM, in_gds_STG_THF010_V.AJCA30, CONVERT(VARCHAR, in_gds_STG_THF010_V.AJORDT, 103), in_gds_STG_THF010_V.AJNMI1, in_gds_STG_THF010_V.AJCHNO, in_gds_STG_THF010_V.AJDPNO, in_gds_STG_THF010_V.AJSRCD)), 2)", "ID")
+            .select("CONVERT(VARCHAR(50), HASHBYTES('SHA1', CONCAT('Peças', in_gds_STG_THF010_V.AJGNN2, in_gds_STG_THF010_V.AJORNO, CONVERT(VARCHAR, in_gds_STG_THF010_V.AJORDT, 103))), 2)", "ID")
             .addSelect("'Peças'", "TIPO")
             .addSelect("in_gds_STG_THF010_V.AJGNN2", "FILIAL")
             .addSelect("in_gds_STG_THF010_V.AJORNO", "PEDIDO")

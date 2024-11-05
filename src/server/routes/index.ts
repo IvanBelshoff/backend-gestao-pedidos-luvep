@@ -29,9 +29,9 @@ router.delete('/regras/:id', EnsureAuthenticated, Regras(['REGRA_ADMIN']), Regra
 
 //Pedidos
 router.get('/pedidos', PedidosController.getAllValidation, PedidosController.getAll);
-
+router.get('/pedidos/vendedor', PedidosController.getAllBySellerCodeValidation, PedidosController.getAllBySellerCode);
 //Justificativas
 router.post('/justificativa/pedido/:id', JustificativasController.createByIdValidation, JustificativasController.createById);
 router.get('/justificativa/pedido/:id', JustificativasController.getAllByIdValidation, JustificativasController.getAllById);
-
+router.put('/justificativa/:id', JustificativasController.updataByIdValidation, JustificativasController.updateById);
 export { router };

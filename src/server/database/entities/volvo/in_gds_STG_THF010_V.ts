@@ -28,6 +28,9 @@ export class in_gds_STG_THF010_V {
     @ViewColumn({ name: "AJCA30" })
     CLIENTE: string;
 
+    @ViewColumn({ name: "AJCNUM" })
+    COD_CLIENTE: string;
+
     @ViewColumn({
         name: "AJORDT",
         transformer: {

@@ -1,14 +1,15 @@
+import { Usuario } from '../../database/entities';
+import { usuarioRepository } from '../../database/repositories';
 import { IBodySuperior } from '../../shared/interfaces';
-import { Funcionario } from '../../database/entities';
-import { funcionarioRepository } from '../../database/repositories/funcionarioRepository';
 
-const atualizaSuperior = async (id: number, parent: number): Promise<null | Funcionario | Error> => {
+
+const atualizaSuperior = async (id: number, parent: number): Promise<null | Usuario | Error> => {
 
     if (parent == 0) {
         return null;
     }
 
-    const funcionarioSuperior = await funcionarioRepository.findOne({
+    const usuarioSuperior = await usuarioRepository.findOne({
         relations: {
             parent: true,
             children: true
@@ -18,11 +19,11 @@ const atualizaSuperior = async (id: number, parent: number): Promise<null | Func
         }
     });
 
-    if (!funcionarioSuperior) {
+    if (!usuarioSuperior) {
         return new Error('parent não localizado');
     }
 
-    const funcionario = await funcionarioRepository.findOne({
+    const usuario = await usuarioRepository.findOne({
         relations: {
             parent: true,
             children: true
@@ -32,34 +33,34 @@ const atualizaSuperior = async (id: number, parent: number): Promise<null | Func
         }
     });
 
-    if (funcionarioSuperior && funcionario) {
+    if (usuarioSuperior && usuario) {
 
-        if (funcionario.id === funcionarioSuperior.id) {
+        if (usuario.id === usuarioSuperior.id) {
             return new Error('Você não pode adicionar você mesmo como superior');
         }
 
-        const superiorSubordinado = funcionario.children.filter(func => func.id == parent);
+        const superiorSubordinado = usuario.children.filter(func => func.id == parent);
 
         if (superiorSubordinado.length > 0) {
-            return new Error(`Funcionário ${funcionarioSuperior.nome} não pode ser adicionado como superior, pois ele é seu subordinado`);
+            return new Error(`Funcionário ${usuarioSuperior.nome} não pode ser adicionado como superior, pois ele é seu subordinado`);
         }
 
-        if (funcionarioSuperior.ativo == false) {
+        if (usuarioSuperior.bloqueado == false) {
             return new Error('Você não pode adicionar um funcionário desligado como seu superior');
         }
 
-        return funcionarioSuperior;
+        return usuarioSuperior;
 
     } else {
         return null;
     }
 };
 
-export const updateSuperiorById = async (id: number, funcionario: IBodySuperior): Promise<void | Error> => {
+export const updateSuperiorById = async (id: number, usuario: IBodySuperior): Promise<void | Error> => {
 
     try {
 
-        const funcionarioCadastrado = await funcionarioRepository.findOne({
+        const usuarioCadastrado = await usuarioRepository.findOne({
             relations: {
                 parent: true,
                 children: true
@@ -69,15 +70,15 @@ export const updateSuperiorById = async (id: number, funcionario: IBodySuperior)
             }
         });
 
-        if (!funcionarioCadastrado) {
-            return new Error('Funcionario não localizado');
+        if (!usuarioCadastrado) {
+            return new Error('Usuario não localizado');
         }
 
-        const idSuperior = funcionarioCadastrado?.parent?.id || 0;
+        const idSuperior = usuarioCadastrado?.parent?.id || 0;
 
-        const { parent = funcionario.parent || idSuperior } = funcionario;
+        const { parent = usuario.parent || idSuperior } = usuario;
 
-        const superiorFuncionario = await funcionarioRepository.findOne({
+        const superiorUsuario = await usuarioRepository.findOne({
             relations: {
                 parent: true
             },
@@ -86,13 +87,13 @@ export const updateSuperiorById = async (id: number, funcionario: IBodySuperior)
             }
         });
 
-        if (superiorFuncionario) {
-            funcionarioCadastrado.parent = superiorFuncionario;
+        if (superiorUsuario) {
+            usuarioCadastrado.parent = superiorUsuario;
         }
 
-        if (funcionario.parent || funcionario.parent == 0) {
+        if (usuario.parent || usuario.parent == 0) {
 
-            const superiorAtualzado = await atualizaSuperior(id, funcionario.parent);
+            const superiorAtualzado = await atualizaSuperior(id, usuario.parent);
 
             if (superiorAtualzado instanceof Error) {
 
@@ -100,10 +101,10 @@ export const updateSuperiorById = async (id: number, funcionario: IBodySuperior)
 
             }
 
-            funcionarioCadastrado.parent = superiorAtualzado;
+            usuarioCadastrado.parent = superiorAtualzado;
         }
 
-        await funcionarioRepository.save(funcionarioCadastrado);
+        await usuarioRepository.save(usuarioCadastrado);
 
     } catch (error) {
         console.log(error);

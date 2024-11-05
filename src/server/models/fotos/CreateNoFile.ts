@@ -1,7 +1,7 @@
 
-import { deleteArquivo } from '../../shared/services';
 import { fotoRepository } from '../../database/repositories/fotoRepository';
 import path from 'path';
+import { deleteArquivoLocal } from '../../shared/services';
 
 
 export const createNoFile = async (): Promise<number | Error> => {
@@ -34,7 +34,7 @@ export const createNoFile = async (): Promise<number | Error> => {
 
     } catch (error) {
         console.log(error);
-        deleteArquivo(local, originalname, true);
+        deleteArquivoLocal(local, originalname);
         return new Error('Erro ao cadastrar ao salvar foto');
     }
 

@@ -16,5 +16,5 @@ export class Justificativa {
     data_atualizacao: Date
 
     @ManyToOne(() => Pedido, (pedido) => pedido.justificativas)
-    pedido: Pedido | null
+    pedido: Pedido
 }

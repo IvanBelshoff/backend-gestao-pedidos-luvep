@@ -23,6 +23,12 @@ export enum Localidade {
     LIN = 'lin',
 }
 
+export enum TipoUsuario {
+    CON = 'consultor',
+    COOR = 'coordenador',
+    PRE = 'presidente'
+}
+
 @Entity("usuarios")
 @Tree("closure-table", {
     closureTableName: "usuario_closure",
@@ -51,6 +57,9 @@ export class Usuario {
 
     @Column({ nullable: false, type: 'enum', enum: Localidade, default: Localidade.VIA })
     localidade: Localidade;
+
+    @Column({ nullable: false, type: 'enum', enum: TipoUsuario, default: TipoUsuario.CON })
+    tipo_usuario: TipoUsuario;
 
     @Column()
     senha?: string;

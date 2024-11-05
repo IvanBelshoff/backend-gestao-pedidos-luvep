@@ -40,7 +40,7 @@ const migrationCreateRegisters = async (): Promise<string | Error> => {
                     departamento: pedidoVolvoRecord.DEPARTAMENTO,
                     total: pedidoVolvoRecord.TOTAL,
                     dias_em_aberto: pedidoVolvoRecord.DIAS_EM_ABERTO,
-                    tipo_de_operacao: pedidoVolvoRecord.TIPO_DE_OPERACAO,
+                    tipo_de_operacao: pedidoVolvoRecord.TIPO_DE_OPERACAO
                 });
 
                 recordsToCreate.push(newRecord);
@@ -171,7 +171,7 @@ const migrationDatabase = async (): Promise<string> => {
 // Função para executar a migração diariamente as 6 horas da manhã
 export const dailyDatabaseMigration = async (): Promise<void> => {
     // Cronjob que executa a migração diariamente às 6 horas da manhã
-    cron.schedule('46 11 * * *', async () => {
+    cron.schedule('05 09 * * *', async () => {
         const message = await migrationDatabase();
         console.log(message);
     });

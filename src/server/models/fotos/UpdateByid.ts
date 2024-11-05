@@ -1,16 +1,14 @@
 import mime from 'mime';
-
 import { Foto } from '../../database/entities';
 import { fotoRepository } from '../../database/repositories/fotoRepository';
 import path from 'path';
-import { deleteArquivo } from '../../shared/services';
+import { deleteArquivoLocal } from '../../shared/services';
 
-export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', foto?: Omit<Foto, 'id' | 'data_atualizacao' | 'data_criacao' | 'colaborador' | 'usuario' | 'url'>): Promise<void | Error> => {
+export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', foto?: Omit<Foto, 'id' | 'data_atualizacao' | 'data_criacao' | 'usuario' | 'url'>): Promise<void | Error> => {
 
     try {
 
         const localFotoProfile = path.resolve(__dirname, '..', '..', '..', 'shared', 'data', 'default\\profile.jpg');
-
         const originalnameProfile = 'profile.jpg';
 
         if (metodo == 'atualizar' && foto) {
@@ -29,7 +27,7 @@ export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', fo
                 return new Error('Foto não localizada');
             }
 
-            const deleteFotoOriginal = await deleteArquivo(fotoRecuperada.local, fotoRecuperada.originalname, false);
+            const deleteFotoOriginal = await deleteArquivoLocal(fotoRecuperada.local, fotoRecuperada.nome);
 
             if (deleteFotoOriginal instanceof Error) {
                 return new Error(deleteFotoOriginal.message);
@@ -37,18 +35,26 @@ export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', fo
 
                 console.log('foto foi devidamente excluida');
                 fotoRecuperada.nome = nome,
-                    fotoRecuperada.originalname = originalname,
-                    fotoRecuperada.tamanho = tamanho,
-                    fotoRecuperada.local = local,
-                    fotoRecuperada.tipo = mime.extension(tipo) as string,
-                    fotoRecuperada.url = `http://${process.env.HOST}:${process.env.PORT}/uploads/fotos/usuarios/${nome}`,
-                    fotoRecuperada.width = width,
-                    fotoRecuperada.height = height
+                fotoRecuperada.originalname = originalname,
+                fotoRecuperada.tamanho = tamanho,
+                fotoRecuperada.local = local,
+                fotoRecuperada.tipo = mime.extension(tipo) as string,
+                fotoRecuperada.url = `http://${process.env.HOST}:${process.env.PORT}/uploads/fotos/usuarios/${nome}`,
+                fotoRecuperada.width = width,
+                fotoRecuperada.height = height;
 
-                await fotoRepository.save(fotoRecuperada);
+                const atualizaFoto = await fotoRepository.save(fotoRecuperada);
+
+                if (atualizaFoto instanceof Error) {
+                    return new Error(atualizaFoto.message);
+                }
+
+                return;
             }
 
         } else {
+
+            const url = `http://${process.env.HOST}:${process.env.PORT}/profile/profile.jpg`;
 
             const fotoRecuperada = await fotoRepository.findOne({
                 where: {
@@ -62,7 +68,7 @@ export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', fo
                 return new Error('Foto não localizada');
             }
 
-            const deleteFotoOriginal = await deleteArquivo(fotoRecuperada.local, fotoRecuperada.originalname, false);
+            const deleteFotoOriginal = await deleteArquivoLocal(fotoRecuperada.local, fotoRecuperada.nome);
 
             if (deleteFotoOriginal instanceof Error) {
                 return new Error(deleteFotoOriginal.message);
@@ -70,15 +76,21 @@ export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', fo
 
                 console.log('foto foi devidamente excluida');
                 fotoRecuperada.nome = 'profile.jpg',
-                    fotoRecuperada.originalname = originalnameProfile,
-                    fotoRecuperada.tamanho = 6758,
-                    fotoRecuperada.local = localFotoProfile,
-                    fotoRecuperada.tipo = 'jpg',
-                    fotoRecuperada.url = `http://${process.env.HOST}:${process.env.PORT}/profile/profile.jpg`,
-                    fotoRecuperada.width = 462,
-                    fotoRecuperada.height = 462
+                fotoRecuperada.originalname = originalnameProfile,
+                fotoRecuperada.tamanho = 6758,
+                fotoRecuperada.local = localFotoProfile,
+                fotoRecuperada.tipo = 'jpg',
+                fotoRecuperada.url = url,
+                fotoRecuperada.width = 462,
+                fotoRecuperada.height = 462;
 
-                    await fotoRepository.save(fotoRecuperada);
+                const atualizaFoto = await fotoRepository.save(fotoRecuperada);
+
+                if (atualizaFoto instanceof Error) {
+                    return new Error(atualizaFoto.message);
+                }
+
+                return;
             }
 
         }
