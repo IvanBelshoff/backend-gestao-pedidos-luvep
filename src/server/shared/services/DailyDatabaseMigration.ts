@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { Pedido } from '../../database/entities';
+import { Pedido, Status } from '../../database/entities';
 import { pedidoRepository, PedidoVolvo } from '../../database/repositories';
 
 // Função para atualizar um campo se o valor for diferente
@@ -16,9 +16,9 @@ const migrationCreateRegisters = async (): Promise<string | Error> => {
         const pedidosVolvo = await PedidoVolvo.find();
 
         // Obtem todos os registros existentes do repositório Luvep de uma só vez
-        const existingRecords = await pedidoRepository.find();
+        const pedidosLuvep = await pedidoRepository.find();
 
-        const existingMap = new Map(existingRecords.map(record => [record.id_volvo, record]));
+        const existingMap = new Map(pedidosLuvep.map(record => [record.id_volvo, record]));
 
         const recordsToCreate: Pedido[] = [];
 
@@ -35,6 +35,7 @@ const migrationCreateRegisters = async (): Promise<string | Error> => {
                     cod_cliente: pedidoVolvoRecord.COD_CLIENTE,
                     cliente: pedidoVolvoRecord.CLIENTE,
                     data_do_pedido: new Date(pedidoVolvoRecord.DATA_DO_PEDIDO),
+                    status: Status.ABER,
                     vendedor: pedidoVolvoRecord.VENDEDOR,
                     chassi: pedidoVolvoRecord.CHASSI,
                     departamento: pedidoVolvoRecord.DEPARTAMENTO,
@@ -69,16 +70,16 @@ const migrationUpdateRegisters = async (): Promise<string | Error> => {
     try {
 
         // Obtem todos os registros do repositório Volvo
-        const orderBookVolvo = await PedidoVolvo.find();
+        const pedidosVolvo = await PedidoVolvo.find();
 
         // Obtem todos os registros existentes do repositório Luvep de uma só vez
-        const existingRecords = await pedidoRepository.find();
+        const pedidosLuvep = await pedidoRepository.find();
 
-        const existingMap = new Map(existingRecords.map(record => [record.id_volvo, record]));
+        const existingMap = new Map(pedidosLuvep.map(record => [record.id_volvo, record]));
 
         const recordsToUpdate: Pedido[] = [];
 
-        for (const volvoRecord of orderBookVolvo) {
+        for (const volvoRecord of pedidosVolvo) {
 
             const existingRecord = existingMap.get(volvoRecord.ID);
 
@@ -118,6 +119,45 @@ const migrationUpdateRegisters = async (): Promise<string | Error> => {
     }
 };
 
+// Migração de finalização de registros
+const migrationFinishedRegisters = async (): Promise<string | Error> => {
+
+    try {
+        // Obtem todos os registros do repositório Volvo
+        const pedidosVolvo = await PedidoVolvo.find();
+
+        // Obtem todos os registros existentes do repositório Luvep de uma só vez
+        const pedidosLuvep = await pedidoRepository.find();
+
+        const existingMap = new Map(pedidosVolvo.map(record => [record.ID, record]));
+
+        const recordsToFinished: Pedido[] = [];
+
+        for (const existingRecord of pedidosLuvep) {
+
+            if (!existingMap.has(existingRecord.id_volvo)) {
+
+                recordsToFinished.push({ ...existingRecord, status: Status.FIN });
+
+            }
+        }
+
+        if (recordsToFinished.length) {
+
+            await pedidoRepository.save(recordsToFinished);
+
+        }
+
+        return `Registros finalizados com sucesso: ${recordsToFinished.length}`;
+
+    } catch (error) {
+        console.log(error);
+        return new Error('Erro ao deletar os registros');
+
+    }
+
+};
+
 // Função principal de migração diária
 const migrationDatabase = async (): Promise<string> => {
 
@@ -133,12 +173,25 @@ const migrationDatabase = async (): Promise<string> => {
 
         const createMigration = await migrationCreateRegisters().finally(async () => {
 
-            const updateMigration = await migrationUpdateRegisters();
+            const updateMigration = await migrationUpdateRegisters().finally(async () => {
+
+                const finishedMigration = await migrationFinishedRegisters();
+
+                if (finishedMigration instanceof Error) {
+                    messagesError.push(finishedMigration.message);
+
+                } else {
+                    messagesSuccess.push(finishedMigration);
+                }
+
+            });
 
             if (updateMigration instanceof Error) {
-                messagesError.push(updateMigration.message);
+                const middleIndex = Math.floor(messagesError.length / 2); // Calcula o índice do meio
+                messagesError.splice(middleIndex, 0, updateMigration.message); // Insere a mensagem de erro no meio
             } else {
-                messagesSuccess.push(updateMigration);
+                const middleIndex = Math.floor(messagesError.length / 2); // Calcula o índice do meio
+                messagesSuccess.splice(middleIndex, 0, updateMigration); // Insere a mensagem de sucesso no meio
             }
 
         });
@@ -150,6 +203,7 @@ const migrationDatabase = async (): Promise<string> => {
         }
 
     } catch (error) {
+        console.log(error);
         messagesError.push('Erro inesperado na migração de dados');
     }
 
@@ -162,6 +216,7 @@ const migrationDatabase = async (): Promise<string> => {
         messagesSuccess.length > 0 ? `Sucessos: ${messagesSuccess.join('; ')}` : '',
         messagesError.length > 0 ? `Erros: ${messagesError.join('; ')}` : '',
         `Tempo de execução: ${duration} segundos.`,
+        `Data e hora: ${new Date().toLocaleString()}`,
         'Migração diária finalizada.\n',
     ].filter(Boolean).join('\n'); // Filtra mensagens vazias e junta com nova linha
 
@@ -171,7 +226,7 @@ const migrationDatabase = async (): Promise<string> => {
 // Função para executar a migração diariamente as 6 horas da manhã
 export const dailyDatabaseMigration = async (): Promise<void> => {
     // Cronjob que executa a migração diariamente às 6 horas da manhã
-    cron.schedule('05 09 * * *', async () => {
+    cron.schedule('00 06 * * *', async () => {
         const message = await migrationDatabase();
         console.log(message);
     });

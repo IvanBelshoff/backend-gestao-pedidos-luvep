@@ -1,5 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { Justificativa } from "./Justificativas";
+
+export enum Status {
+    ABER = 'aberto',
+    FIN = 'finalizado'
+}
 
 @Entity('pedidos')
 export class Pedido {
@@ -45,6 +50,15 @@ export class Pedido {
 
     @Column({ type: 'varchar', length: 2, nullable: false })
     tipo_de_operacao: string;
+
+    @Column({ nullable: false, type: 'enum', enum: Status, default: Status.ABER })
+    status: Status;
+
+    @CreateDateColumn({ nullable: false, type: "date" })
+    data_criacao: Date
+
+    @UpdateDateColumn({ nullable: false, type: "date", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    data_atualizacao: Date
 
     @OneToMany(() => Justificativa, (justificativa) => justificativa.pedido)
     justificativas: Justificativa[]
