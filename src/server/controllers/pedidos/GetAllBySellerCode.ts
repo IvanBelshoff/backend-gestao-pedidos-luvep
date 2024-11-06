@@ -28,7 +28,6 @@ export const getAllBySellerCode = async (req: Request<{}, {}, {}, IQueryGetAllPe
         });
     }
 
-
     const result = await PedidosProvider.getAllBySellerCode(
         usuario.codigo_vendedor,
         req.query.page,
@@ -36,7 +35,10 @@ export const getAllBySellerCode = async (req: Request<{}, {}, {}, IQueryGetAllPe
         req.query.filter
     );
 
-    const count = await PedidosProvider.count(req.query.filter);
+    const count = await PedidosProvider.countBySellerCode(
+        usuario.codigo_vendedor,
+        req.query.filter
+    );
 
     if (result instanceof Error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

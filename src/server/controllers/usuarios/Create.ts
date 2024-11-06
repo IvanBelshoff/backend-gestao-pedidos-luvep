@@ -9,17 +9,16 @@ import { FotosProvider } from '../../models/fotos';
 import { deleteArquivoLocal } from '../../shared/services';
 import { UsuariosProvider } from '../../models/usuarios';
 
-
 export const createValidation = validation((getSchema) => ({
     body: getSchema<IBodyCreateUsuarios>(yup.object().shape({
         nome: yup.string().required().min(1).max(50),
         sobrenome: yup.string().required().min(1).max(50),
         email: yup.string().required().email().min(5),
-        codigo_vendedor: yup.string().required().min(1).max(50),
+        codigo_vendedor: yup.string().optional().min(1).max(50),
         bloqueado: yup.boolean().required(),
         localidade: yup.string().required().oneOf(Object.values(Localidade), 'Inválida'),
         tipo_usuario: yup.string().required().oneOf(Object.values(TipoUsuario), 'Inválida'),
-        senha: yup.string().optional()
+        senha: yup.string().required().min(6),
     }))
 }));
 

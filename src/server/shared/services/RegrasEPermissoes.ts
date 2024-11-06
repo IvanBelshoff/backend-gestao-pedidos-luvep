@@ -1,12 +1,22 @@
-import { permissaoRepository, regraRepository } from '../../database/repositories';
+
 import { create as CreateRegra } from '../../models/regras/Create';
 import { create as CreatePermissao } from '../../models/permissoes/Create';
 import { deleteById as DeleteRegra } from '../../models/regras/DeleteById';
-import { Permissao, Regra } from '../../database/entities';
 import { updateById as UpdateRegra } from '../../models/regras/UpdateById';
 import { updateById as UpdatePermissao } from '../../models/permissoes/UpdateById';
 import { deleteById as DeletePermissao } from '../../models/permissoes/DeleteById';
-import { IPermissao, IRegra } from '../interfaces';
+import { Permissao, Regra } from '../../database/entities';
+import { permissaoRepository, regraRepository } from '../../database/repositories';
+
+interface IPermissao {
+    nome: string;
+    nome_regra?: string;
+}
+
+interface IRegra {
+    nome: string;
+    permissoes: IPermissao[];
+}
 
 const extrairNomeEmMinusculo = (texto: string): string => {
     const partes = texto.split('_');
@@ -31,7 +41,7 @@ const convertRegras = async (regrasBD: Promise<Regra[]>): Promise<{ [key: string
 };
 
 
-export async function RegrasEPermissoes() {
+export async function RegrasEPErmissoes() {
 
     const REGRAS_PERMISSOES = await JSON.parse(process.env.REGRAS_PERMISSOES || '{}');
 

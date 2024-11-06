@@ -1,10 +1,11 @@
-import { Router} from 'express';
+import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { EnsureAuthenticated, Regras } from '../shared/middlewares';
+import { EnsureAuthenticated, Permissoes, Regras, SalvarFoto } from '../shared/middlewares';
 import { PermissoesController } from '../controllers/permissoes';
 import { RegrasController } from '../controllers/regras';
 import { JustificativasController } from '../controllers/justificativas';
 import { PedidosController } from '../controllers/pedidos';
+import { UsuariosController } from '../controllers/usuarios';
 
 const router = Router();
 
@@ -27,11 +28,17 @@ router.get('/regras/usuario/:id', EnsureAuthenticated, Regras(['REGRA_ADMIN']), 
 router.put('/regras/:id', EnsureAuthenticated, Regras(['REGRA_ADMIN']), RegrasController.updataByIdValidation, RegrasController.updateById);
 router.delete('/regras/:id', EnsureAuthenticated, Regras(['REGRA_ADMIN']), RegrasController.deleteByIdValidation, RegrasController.deleteById);
 
+//Usuarios
+router.post('/entrar', UsuariosController.loginValidation, UsuariosController.login);
+router.post('/usuarios', EnsureAuthenticated, Regras(['REGRA_USUARIO']), Permissoes(['PERMISSAO_CRIAR_USUARIO']), SalvarFoto(), UsuariosController.createValidation, UsuariosController.create);
+router.delete('/usuarios/:id', EnsureAuthenticated, Regras(['REGRA_USUARIO']), Permissoes(['PERMISSAO_DELETAR_USUARIO']), UsuariosController.deleteByIdValidation, UsuariosController.deleteById);
+
 //Pedidos
-router.get('/pedidos', PedidosController.getAllValidation, PedidosController.getAll);
-router.get('/pedidos/vendedor', PedidosController.getAllBySellerCodeValidation, PedidosController.getAllBySellerCode);
+router.get('/pedidos', EnsureAuthenticated, PedidosController.getAllValidation, PedidosController.getAll);
+router.get('/pedidos/vendedor', EnsureAuthenticated, PedidosController.getAllBySellerCodeValidation, PedidosController.getAllBySellerCode);
+
 //Justificativas
-router.post('/justificativa/pedido/:id', JustificativasController.createByIdValidation, JustificativasController.createById);
-router.get('/justificativa/pedido/:id', JustificativasController.getAllByIdValidation, JustificativasController.getAllById);
-router.put('/justificativa/:id', JustificativasController.updataByIdValidation, JustificativasController.updateById);
+router.post('/justificativa/pedido/:id', EnsureAuthenticated, JustificativasController.createByIdValidation, JustificativasController.createById);
+router.get('/justificativa/pedido/:id', EnsureAuthenticated, JustificativasController.getAllByIdValidation, JustificativasController.getAllById);
+router.put('/justificativa/:id', EnsureAuthenticated, JustificativasController.updataByIdValidation, JustificativasController.updateById);
 export { router };

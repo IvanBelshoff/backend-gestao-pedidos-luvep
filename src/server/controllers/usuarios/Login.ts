@@ -6,6 +6,7 @@ import { IBodyPropsUsuarioSignIn } from '../../shared/interfaces';
 import { UsuariosProvider } from '../../models/usuarios';
 import { validation } from '../../shared/middlewares';
 import { JWTService, PasswordCrypto } from '../../shared/services';
+import { Permissao, Regra } from '../../database/entities';
 
 export const loginValidation = validation((getSchema) => ({
     body: getSchema<IBodyPropsUsuarioSignIn>(yup.object().shape({
@@ -16,9 +17,17 @@ export const loginValidation = validation((getSchema) => ({
 
 export const login = async (req: Request<{}, {}, IBodyPropsUsuarioSignIn>, res: Response) => {
 
+    const convertRegras = (regras: Regra[]): string[] => {
+        return regras.map((regra) => regra.nome);
+    };
+
+    const convertPermissoes = (permissoes: Permissao[]): string[] => {
+        return permissoes.map((permissao) => permissao.nome);
+    };
+
     const { email, senha } = req.body;
 
-    const usuario = await UsuariosProvider.getByEmail(String(email));
+    const usuario = await UsuariosProvider.getByEmail(email);
 
     if (usuario instanceof Error) {
         return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -60,9 +69,21 @@ export const login = async (req: Request<{}, {}, IBodyPropsUsuarioSignIn>, res: 
 
         }
 
+        const usuarioLogin = await UsuariosProvider.updateDateLogin(Number(usuario.id));
+
+        if (usuarioLogin instanceof Error) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                errors: {
+                    default: usuarioLogin.message
+                }
+            });
+        }
+
         return res.status(StatusCodes.OK).json({
             accessToken: accessToken,
-            id: usuario.id
+            id: Number(usuario.id),
+            regras: convertRegras(usuario.regra || []),
+            permissoes: convertPermissoes(usuario.permissao || [])
         });
     }
 };

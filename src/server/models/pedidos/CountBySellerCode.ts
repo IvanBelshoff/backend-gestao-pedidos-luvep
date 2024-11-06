@@ -1,7 +1,7 @@
-import { Pedido, Status } from '../../database/entities';
+import { Status } from '../../database/entities';
 import { pedidoRepository } from '../../database/repositories';
 
-export const getAllBySellerCode = async (cod_vendedor?: string, page?: number, limit?: number, filter?: string): Promise<Pedido[] | Error> => {
+export const countBySellerCode = async (cod_vendedor?: string, filter?: string): Promise<number | Error> => {
     try {
 
         const result = pedidoRepository.createQueryBuilder('pedido')
@@ -11,16 +11,11 @@ export const getAllBySellerCode = async (cod_vendedor?: string, page?: number, l
             .where('pedido.vendedor = :vendedor', { vendedor: cod_vendedor })
             .andWhere('pedido.status = :status', { status: Status.ABER });
 
-        if (page && typeof page == 'string' && limit && typeof limit == 'string') {
-            result.take(page * limit);
-            result.take(limit);
-        }
-
         if (typeof filter === 'string') {
             result.andWhere('LOWER(pedido.pedido) LIKE LOWER(:pedido)', { pedido: `%${filter}%` });
         }
 
-        const pedidos = await result.getMany();
+        const pedidos = await result.getCount();
 
         return pedidos;
 

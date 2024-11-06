@@ -49,3 +49,15 @@ export interface IQueryGetchildrenById {
     children?: string;
     childrenDisponiveis?: string
 }
+
+export interface IBodyPropsUsuarioSignIn extends Pick<Usuario, 'email' | 'senha'> { }
+
+export interface IBodyPropsMail { emailRecuperacao: string }
+
+export interface IQueryPropsGeneratePassword {
+    tipo?: 'capitalizado' | 'minusculo' | 'maiusculo';
+    caracteres?: number;
+    cumprimento?: number;
+    tema?: 'aleatorios' | 'cidades' | 'paises' | 'tecnologias';
+    numeros?: number;
+}

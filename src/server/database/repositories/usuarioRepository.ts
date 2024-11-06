@@ -1,4 +1,4 @@
-import { AppDataSource } from '../data-source';
+import { AppDataSource1 } from '../data-sources/data-source-luvep';
 import { Usuario } from '../entities/luvep/Usuarios';
 
-export const usuarioRepository = AppDataSource.getRepository(Usuario);
+export const usuarioRepository = AppDataSource1.getRepository(Usuario);

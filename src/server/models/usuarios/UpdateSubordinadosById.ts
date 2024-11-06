@@ -1,6 +1,6 @@
 import { In } from 'typeorm';
 import { usuarioRepository } from '../../database/repositories';
-import { Usuario } from '../../database/entities';
+import { TipoUsuario, Usuario } from '../../database/entities';
 import { IBodychildren } from '../../shared/interfaces';
 
 
@@ -36,6 +36,26 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Us
 
             if (usuariosFiltrados) {
 
+                if (usuario.tipo_usuario == TipoUsuario.ADM) {
+                    return new Error('Administradores não podem ter subordinados');
+                }
+
+                if (usuario.tipo_usuario == TipoUsuario.CON) {
+                    return new Error('Consultores não podem ter subordinados');
+                }
+
+                if (usuariosFiltrados.tipo_usuario == TipoUsuario.COOR && usuario.tipo_usuario == TipoUsuario.COOR) {
+                    return new Error('Você não pode adicionar um coordenador como seu subordinado');
+                }
+
+                if (usuariosFiltrados.tipo_usuario == TipoUsuario.GER && usuario.tipo_usuario == TipoUsuario.COOR) {
+                    return new Error('Você não pode adicionar um gerente como subordinado');
+                }
+
+                if (usuariosFiltrados.tipo_usuario == TipoUsuario.ADM && (usuario.tipo_usuario == TipoUsuario.GER || usuario.tipo_usuario == TipoUsuario.COOR)) {
+                    return new Error('Você não pode adicionar um administrador como subordinado');
+                }
+
                 if (usuariosFiltrados.id == usuario.id) {
                     return new Error('Você não pode adicionar você mesmo como subordinado');
                 }
@@ -45,7 +65,7 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Us
                 }
 
                 if (usuariosFiltrados.bloqueado == false) {
-                    return new Error('Você não pode adicionar um funcionário desligado como seu superior');
+                    return new Error('Você não pode adicionar um usuário desligado como seu superior');
                 }
 
                 if (usuariosFiltrados.parent) {

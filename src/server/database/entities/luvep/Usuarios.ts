@@ -26,7 +26,8 @@ export enum Localidade {
 export enum TipoUsuario {
     CON = 'consultor',
     COOR = 'coordenador',
-    PRE = 'presidente'
+    GER = 'gerente',
+    ADM = 'administrador',
 }
 
 @Entity("usuarios")
@@ -49,8 +50,8 @@ export class Usuario {
     @Column({ type: 'text', nullable: false, unique: true })
     email: string
 
-    @Column({ type: 'text', nullable: false, unique: true })
-    codigo_vendedor: string
+    @Column({ type: 'text', nullable: true, unique: true })
+    codigo_vendedor?: string
 
     @Column({ default: false })
     bloqueado: boolean

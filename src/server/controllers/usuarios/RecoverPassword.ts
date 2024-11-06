@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as yup from 'yup';
 
-import { IBodyPropsMail, IBodyPropsUsuarios, IQueryPropsGeneratePassword } from '../../shared/interfaces';
+import { IBodyPropsMail, IBodyUpdateByIdUsuarios, IQueryPropsGeneratePassword } from '../../shared/interfaces';
 import { UsuariosProvider } from '../../models/usuarios';
 import { validation } from '../../shared/middlewares';
 import { DeliveryMailPassword, generatePassword } from '../../shared/services';
@@ -63,14 +63,10 @@ export const recoverPassword = async (req: Request<{}, {}, IBodyPropsMail, IQuer
         });
     }
 
-    const usuarioPassword: IBodyPropsUsuarios = {
-        email: usuario.email,
-        nome: usuario.nome,
-        senha: senha,
-        sobrenome: usuario.sobrenome,
-        bloqueado: usuario.bloqueado
+    const usuarioPassword: IBodyUpdateByIdUsuarios = {
+        ...usuario,
+        senha: senha
     };
-
 
     //Chamo a função abaixo, realizar a atualização no banco de dados.
     const result = await UsuariosProvider.updateById(usuario.id, usuarioPassword);

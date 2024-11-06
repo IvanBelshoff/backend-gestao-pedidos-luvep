@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 import { Pedido } from "./Pedidos"
+import { Status } from "./Status";
 
 @Entity('justificativas')
 export class Justificativa {
@@ -9,6 +10,9 @@ export class Justificativa {
     @Column({ type: 'text', nullable: false })
     conteudo: string
 
+    @Column({ nullable: true, type: "date" })
+    data_previsao?: Date | null;
+
     @CreateDateColumn({ nullable: false, type: "date" })
     data_criacao: Date
 
@@ -17,4 +21,7 @@ export class Justificativa {
 
     @ManyToOne(() => Pedido, (pedido) => pedido.justificativas)
     pedido: Pedido
+
+    @ManyToOne(() => Status, (status) => status.justificativas, { nullable: false })
+    status: Status | null
 }

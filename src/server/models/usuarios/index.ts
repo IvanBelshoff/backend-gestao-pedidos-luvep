@@ -5,15 +5,13 @@ import * as DeleteById from './DeleteById';
 import * as GetSuperioresById from './GetSuperioresById';
 import * as GetSubordinadosById from './GetSubordinadosById';
 import * as GetAll from './GetAll';
-import * as GetAllOrganograma from './GetAllOrganograma';
-import * as GetAllOrganograma2 from './GetAllOrganograma2';
 import * as Count from './Count';
 import * as GetById from './GetById';
-import * as GetFiltrosOrganograma from './GetFiltrosOrganograma';
-import * as GetFiltrosAll from './GetFiltrosAll';
 import * as UpdateSuperiorById from './UpdateSuperiorById';
 import * as UpdateSubordinadosById from './UpdateSubordinadosById';
-import * as GetChart from './GetChart';
+import * as GetByEmail from './GetByEmail';
+import * as UpdateDateLogin from './UpdateDateLogin';
+import * as GetStatusCount from './GetStatusCount';
 
 export const UsuariosProvider = {
     ...create,
@@ -25,11 +23,9 @@ export const UsuariosProvider = {
     ...GetAll,
     ...Count,
     ...GetById,
-    ...GetAllOrganograma,
-    ...GetAllOrganograma2,
-    ...GetFiltrosOrganograma,
-    ...GetFiltrosAll,
     ...UpdateSuperiorById,
     ...UpdateSubordinadosById,
-    ...GetChart
+    ...GetByEmail,
+    ...UpdateDateLogin,
+    ...GetStatusCount
 };

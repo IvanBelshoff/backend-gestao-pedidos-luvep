@@ -2,6 +2,7 @@ import { PasswordCrypto } from './PasswordCrypto';
 import { regraRepository, usuarioRepository } from '../../database/repositories';
 import { FotosProvider } from '../../models/fotos';
 import { fotoRepository } from '../../database/repositories/fotoRepository';
+import { TipoUsuario } from '../../database/entities';
 
 export async function UserDefault() {
 
@@ -44,6 +45,7 @@ export async function UserDefault() {
             const novoUsuario = usuarioRepository.create({
                 nome: process.env.NAME_USER_DEFAULT,
                 sobrenome: process.env.SOBRENOME_USER_DEFAULT,
+                tipo_usuario: TipoUsuario.ADM,
                 email: email,
                 senha: hashPassword,
                 regra: regraAdmin,

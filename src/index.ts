@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { server } from './server/Server';
 import { AppDataSource1, AppDataSource2 } from './server/database';
-import { dailyDatabaseMigration } from './server/shared/services';
+import { dailyDatabaseMigration, RegrasEPErmissoes, UserDefault } from './server/shared/services';
 
 Promise.all([
     AppDataSource1.initialize(),
@@ -10,9 +10,10 @@ Promise.all([
 
     console.log('\nBanco de dados conectado\n');
 
-    await dailyDatabaseMigration();
-
     server.listen(process.env.PORT, async () => {
+        await dailyDatabaseMigration();
+        await RegrasEPErmissoes();
+        await UserDefault();
         console.log(`Servidor rodando no endereço: http://${process.env.HOST}:${process.env.PORT}\n`);
     });
 
