@@ -36,12 +36,8 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Us
 
             if (usuariosFiltrados) {
 
-                if (usuario.tipo_usuario == TipoUsuario.ADM) {
-                    return new Error('Administradores não podem ter subordinados');
-                }
-
-                if (usuario.tipo_usuario == TipoUsuario.CON) {
-                    return new Error('Consultores não podem ter subordinados');
+                if (usuariosFiltrados.id == usuario.id) {
+                    return new Error('Você não pode adicionar você mesmo como subordinado');
                 }
 
                 if (usuariosFiltrados.tipo_usuario == TipoUsuario.COOR && usuario.tipo_usuario == TipoUsuario.COOR) {
@@ -52,20 +48,24 @@ const atualizachildren = async (id: number, children: number[]): Promise<[] | Us
                     return new Error('Você não pode adicionar um gerente como subordinado');
                 }
 
-                if (usuariosFiltrados.tipo_usuario == TipoUsuario.ADM && (usuario.tipo_usuario == TipoUsuario.GER || usuario.tipo_usuario == TipoUsuario.COOR)) {
+                if ((usuariosFiltrados.tipo_usuario == TipoUsuario.CON || usuariosFiltrados.tipo_usuario == TipoUsuario.COOR || usuariosFiltrados.tipo_usuario == TipoUsuario.GER || usuariosFiltrados.tipo_usuario == TipoUsuario.ADM) && usuario.tipo_usuario == TipoUsuario.CON) {
+                    return new Error('Consultores não podem ter consultores como subordinados');
+                }
+
+                if (usuariosFiltrados.tipo_usuario == TipoUsuario.ADM && (usuario.tipo_usuario == TipoUsuario.GER || usuario.tipo_usuario == TipoUsuario.COOR || usuario.tipo_usuario == TipoUsuario.ADM || usuario.tipo_usuario == TipoUsuario.CON)) {
                     return new Error('Você não pode adicionar um administrador como subordinado');
                 }
 
-                if (usuariosFiltrados.id == usuario.id) {
-                    return new Error('Você não pode adicionar você mesmo como subordinado');
+                if ((usuariosFiltrados.tipo_usuario == TipoUsuario.CON || usuariosFiltrados.tipo_usuario == TipoUsuario.COOR || usuariosFiltrados.tipo_usuario == TipoUsuario.GER) && usuario.tipo_usuario == TipoUsuario.ADM) {
+                    return new Error('Administradores não podem ter subordinados');
                 }
 
                 if (usuariosFiltrados.id == usuario.parent?.id) {
-                    return new Error(`Usuario ${usuario.nome} não pode ser adicionado como subordinado, pois ele é seu superior`);
+                    return new Error(`Usuario ${usuariosFiltrados.nome} não pode ser adicionado como subordinado, pois ele é seu superior`);
                 }
 
-                if (usuariosFiltrados.bloqueado == false) {
-                    return new Error('Você não pode adicionar um usuário desligado como seu superior');
+                if (usuariosFiltrados.bloqueado == true) {
+                    return new Error('Você não pode adicionar um usuário desligado como seu subordinado');
                 }
 
                 if (usuariosFiltrados.parent) {
