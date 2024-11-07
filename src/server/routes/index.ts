@@ -32,6 +32,8 @@ router.delete('/regras/:id', EnsureAuthenticated, Regras(['REGRA_ADMIN']), Regra
 router.post('/entrar', UsuariosController.loginValidation, UsuariosController.login);
 router.post('/usuarios', EnsureAuthenticated, Regras(['REGRA_USUARIO']), Permissoes(['PERMISSAO_CRIAR_USUARIO']), SalvarFoto(), UsuariosController.createValidation, UsuariosController.create);
 router.delete('/usuarios/:id', EnsureAuthenticated, Regras(['REGRA_USUARIO']), Permissoes(['PERMISSAO_DELETAR_USUARIO']), UsuariosController.deleteByIdValidation, UsuariosController.deleteById);
+router.get('/usuarios/subordinados/:id', EnsureAuthenticated, Regras(['REGRA_USUARIO']), UsuariosController.getSubordinadosByIdValidation, UsuariosController.getSubordinadosById);
+router.get('/usuarios', EnsureAuthenticated, Regras(['REGRA_USUARIO']), UsuariosController.getAllValidation, UsuariosController.getAll);
 
 //Pedidos
 router.get('/pedidos', EnsureAuthenticated, PedidosController.getAllValidation, PedidosController.getAll);

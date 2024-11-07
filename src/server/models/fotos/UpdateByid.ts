@@ -75,7 +75,7 @@ export const updateById = async (id: number, metodo: 'excluir' | 'atualizar', fo
             } else {
 
                 console.log('foto foi devidamente excluida');
-                fotoRecuperada.nome = 'profile.jpg',
+                fotoRecuperada.nome = originalnameProfile,
                 fotoRecuperada.originalname = originalnameProfile,
                 fotoRecuperada.tamanho = 6758,
                 fotoRecuperada.local = localFotoProfile,

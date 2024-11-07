@@ -53,8 +53,8 @@ export class Usuario {
     @Column({ type: 'text', nullable: true, unique: true })
     codigo_vendedor?: string
 
-    @Column({ default: false })
-    bloqueado: boolean
+    @Column({ default: false, nullable: false })
+    bloqueado?: boolean
 
     @Column({ nullable: false, type: 'enum', enum: Localidade, default: Localidade.VIA })
     localidade: Localidade;

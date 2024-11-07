@@ -1,5 +1,5 @@
 import { Usuario } from '../../database/entities';
-import { usuarioRepository } from '../../database/repositories';
+import { usuarioRepository, usuarioTreeRepository } from '../../database/repositories';
 
 interface Ichildren {
     childrenDisponiveis: Omit<Usuario, 'parent' | 'children'>[] | [],
@@ -46,11 +46,12 @@ const getAllSuperiors = (usuarioId: number, allUsuarios: Usuario[]): number[] =>
     return ids;
 };
 
-const filterByName = (items: Usuario[], query: string) =>
-    items.filter(item =>
-        item.nome.toLowerCase().includes(query.toLowerCase())
-    );
+const filterByName = (items: Usuario[], query: string): Usuario[] => {
 
+    const itemsFiltrados = items.filter(item => item.nome.toLowerCase().includes(query.toLowerCase()));
+
+    return itemsFiltrados;
+};
 
 export const getSubordinadosById = async (id: number, children?: string, childrenDisponiveis?: string): Promise<Ichildren | Error> => {
     try {
@@ -75,11 +76,7 @@ export const getSubordinadosById = async (id: number, children?: string, childre
 
         const allUsuarios = await usuarioRepository.find({ relations: ['children', 'parent'], order: { nome: 'ASC' } });
 
-        const tree = buildTree(usuario.id, allUsuarios);
-
-        if (!tree) {
-            return new Error('Erro ao construir árvore de children.');
-        }
+        const tree = await usuarioTreeRepository.findDescendantsTree(usuario);
 
         const allSubordinateIds = getAllSubordinateIds(tree);
 

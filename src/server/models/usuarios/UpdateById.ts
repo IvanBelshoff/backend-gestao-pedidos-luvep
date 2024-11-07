@@ -27,7 +27,7 @@ export const updateById = async (id: number, usuario: IBodyUpdateByIdUsuarios, f
         });
 
         if (!usuarioCadastrado) {
-            return new Error('Funcionario não localizado');
+            return new Error('Usuário não localizado');
         }
         
         if (usuario?.senha) {

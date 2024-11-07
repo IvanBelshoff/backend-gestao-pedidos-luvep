@@ -1,5 +1,5 @@
 import * as create from './Create';
-import * as ValidaEmailFuncionario from './validaEmailFuncionario';
+import * as ValidaEmailECodVendedor from './ValidaEmailECodVendedor';
 import * as UpdateById from './UpdateById';
 import * as DeleteById from './DeleteById';
 import * as GetSuperioresById from './GetSuperioresById';
@@ -15,7 +15,7 @@ import * as GetStatusCount from './GetStatusCount';
 
 export const UsuariosProvider = {
     ...create,
-    ...ValidaEmailFuncionario,
+    ...ValidaEmailECodVendedor,
     ...UpdateById,
     ...DeleteById,
     ...GetSuperioresById,

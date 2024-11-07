@@ -15,13 +15,16 @@ export const getAll = async (
             .leftJoinAndSelect('usuario.children', 'children')
             .leftJoinAndSelect('usuario.foto', 'foto')
             .orderBy('usuario.nome', 'ASC');
+            
+        // Recuperar os pedidos do usuário
+        //.leftJoinAndMapMany('usuario.pedido',Pedido, 'pedido', 'usuario.codigo_vendedor = pedido.vendedor')
 
         if (page && typeof page == 'string' && limit && typeof limit == 'string') {
             result.skip((page - 1) * limit);
             result.take(limit);
         }
 
-        if (typeof filter === 'string') {
+        if (filter && typeof filter === 'string') {
             // Verificar se a string contém espaços em branco e removê-los das extremidades
             filter = filter.trim();
         
@@ -47,15 +50,14 @@ export const getAll = async (
             }
         }        
 
-        if (typeof localidade === 'string') {
+        if (localidade && typeof localidade === 'string') {
             result.andWhere('usuario.localidade = :localidade', { localidade: localidade });
         }
 
-        if (typeof vinculos === 'string') {
+        if (vinculos && typeof vinculos === 'string') {
             switch (vinculos) {
             case 'nenhum':
-                result.andWhere('usuario.parentId IS NULL')
-                    .andWhere('"children"."id" IS NULL');
+                result.andWhere('usuario.parentId IS NULL').andWhere('"children"."id" IS NULL');
                 break;
             case 'subordinados':
                 result.andWhere('"children"."id" IS NOT NULL');

@@ -11,7 +11,7 @@ export const count = async (
             .leftJoinAndSelect('usuario.parent', 'parent')
             .leftJoinAndSelect('usuario.children', 'children');
 
-        if (typeof filter === 'string') {
+        if (filter && typeof filter === 'string') {
             // Verificar se a string contém espaços em branco e removê-los das extremidades
             filter = filter.trim();
         
@@ -37,11 +37,11 @@ export const count = async (
             }
         }
 
-        if (typeof localidade === 'string') {
+        if (localidade && typeof localidade === 'string') {
             result.andWhere('usuario.localidade = :localidade', { localidade: localidade });
         }
 
-        if (typeof vinculos === 'string') {
+        if (vinculos && typeof vinculos === 'string') {
             switch (vinculos) {
             case 'nenhum':
                 result.andWhere('usuario.parentId IS NULL')
@@ -58,11 +58,8 @@ export const count = async (
 
         const count = await result.getCount();
 
-        if (Number.isInteger(Number(count))) {
-            return Number(count);
-        }
+        return count;
 
-        return new Error('Erro ao consultar a quantidade total de registros');
     } catch (error) {
         console.log(error);
         return new Error('Erro ao consultar a quantidade total de registros');

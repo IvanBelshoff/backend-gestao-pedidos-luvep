@@ -6,7 +6,6 @@ import { validation } from '../../shared/middlewares';
 import { IParamsIdGlobal } from '../../shared/interfaces';
 import { UsuariosProvider } from '../../models/usuarios';
 
-
 export const deleteByIdValidation = validation((getSchema) => ({
     params: getSchema<IParamsIdGlobal>(yup.object().shape({
         id: yup.number().integer().required().moreThan(0),

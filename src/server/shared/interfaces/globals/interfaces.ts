@@ -31,6 +31,7 @@ export interface IRegra {
 
 export interface IBody {
     email?: string,
+    codigo_vendedor?: string
 }
 
 export interface IResponseErros {

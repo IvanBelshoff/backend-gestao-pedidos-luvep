@@ -9,16 +9,21 @@ import { IBodyUpdateByIdUsuarios, IParamsIdGlobal, IResponseErros } from '../../
 import { Localidade, TipoUsuario } from '../../database/entities';
 import { UsuariosProvider } from '../../models/usuarios';
 import { deleteArquivoLocal } from '../../shared/services';
+import sharp from 'sharp';
 
 export const updateByIdValidation = validation((getSchema) => ({
     body: getSchema<IBodyUpdateByIdUsuarios>(yup.object().shape({
         nome: yup.string().required().min(1).max(50),
         sobrenome: yup.string().required().min(1).max(50),
         email: yup.string().required().email().min(5),
-        codigo_vendedor: yup.string().required().min(1).max(50),
-        bloqueado: yup.boolean().required(),
+        bloqueado: yup.boolean().optional(),
         localidade: yup.string().required().oneOf(Object.values(Localidade), 'Inválida'),
-        tipo_usuario: yup.string().required().oneOf(Object.values(TipoUsuario), 'Inválida'),
+        tipo_usuario: yup.string().required().oneOf(Object.values(TipoUsuario), 'Inválido'),
+        codigo_vendedor: yup.string().min(3).when('tipo_usuario', {
+            is: TipoUsuario.CON,
+            then: (schema) => schema.required('O código do vendedor é obrigatório para consultores.'),
+            otherwise: (schema) => schema.optional(),
+        }),
         senha: yup.string().optional()
     })),
     params: getSchema<IParamsIdGlobal>(yup.object().shape({
@@ -39,7 +44,7 @@ export const updateById = async (req: Request<IParamsIdGlobal, {}, IBodyUpdateBy
         });
     }
 
-    const validaEmailEMatricula = await UsuariosProvider.validaEmailEMatriculaFuncionario(req.params.id, req.body.email as string | undefined);
+    const validaEmailEMatricula = await UsuariosProvider.validaEmailECodVendedor(req.params.id, req.body.email, req.body.codigo_vendedor);
 
     if (validaEmailEMatricula instanceof Error) {
 
@@ -67,6 +72,8 @@ export const updateById = async (req: Request<IParamsIdGlobal, {}, IBodyUpdateBy
         originalname: req.file.originalname,
         tamanho: req.file.size,
         tipo: req.file.mimetype,
+        width: (await sharp(req.file.path).metadata()).width || undefined,
+        height: (await sharp(req.file.path).metadata()).height || undefined
     });
 
     if (result instanceof Error) {
