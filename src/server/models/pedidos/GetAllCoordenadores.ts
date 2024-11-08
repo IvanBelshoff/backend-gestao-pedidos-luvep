@@ -1,14 +1,18 @@
-import { Pedido, Status } from '../../database/entities';
+import { Pedido, Status, Usuario } from '../../database/entities';
 import { pedidoRepository } from '../../database/repositories';
 
-export const getAllBySellerCode = async (cod_vendedor?: string, page?: number, limit?: number, filter?: string): Promise<Pedido[] | Error> => {
+interface IPedidoUsuario extends Pedido {
+    usuario: Usuario;
+}
+export const getAllCoordenadores = async (id: number, page?: number, limit?: number, filter?: string): Promise<Pedido[] | Error> => {
     try {
 
         const result = pedidoRepository.createQueryBuilder('pedido')
             .leftJoinAndSelect('pedido.justificativas', 'justificativa')
+            .leftJoinAndMapOne('pedido.usuario', Usuario, 'usuario', 'pedido.vendedor = usuario.codigo_vendedor')
             .addOrderBy('justificativa.id', 'ASC')
             .orderBy('pedido.id', 'DESC')
-            .where('pedido.vendedor = :vendedor', { vendedor: cod_vendedor })
+            .where('usuario.parent.id = :id', { id: id })
             .andWhere('pedido.status = :status', { status: Status.ABER });
 
         if (page && typeof page == 'string' && limit && typeof limit == 'string') {
@@ -22,7 +26,8 @@ export const getAllBySellerCode = async (cod_vendedor?: string, page?: number, l
 
         const pedidos = await result.getMany();
 
-        return pedidos;
+
+        return pedidos as IPedidoUsuario[];
 
     } catch (error) {
         console.log(error);

@@ -40,7 +40,6 @@ router.patch('/usuarios/subordinados/:id', EnsureAuthenticated, UsuariosControll
 
 //Pedidos
 router.get('/pedidos', EnsureAuthenticated, PedidosController.getAllValidation, PedidosController.getAll);
-router.get('/pedidos/vendedor', EnsureAuthenticated, PedidosController.getAllBySellerCodeValidation, PedidosController.getAllBySellerCode);
 
 //Justificativas
 router.post('/justificativa/pedido/:id', EnsureAuthenticated, JustificativasController.createByIdValidation, JustificativasController.createById);

@@ -1,11 +1,19 @@
 import * as GetAll from './GetAll';
 import * as Count from './Count';
-import * as GetAllBySellerCode from './GetAllBySellerCode';
-import * as CountBySellerCode from './CountBySellerCode';
+import * as GetAllConsultores from './GetAllConsultores';
+import * as CountAllConsultores from './CountAllConsultores';
+import * as GetAllCoordenadores from './GetAllCoordenadores';
+import * as CountAllCoordenadores from './CountAllCoordenadores';
+import * as GetAllGerentes from './GetAllGerentes';
+import * as CountAllGerentes from './CountAllGerentes';
 
 export const PedidosProvider = {
     ...GetAll,
     ...Count,
-    ...GetAllBySellerCode,
-    ...CountBySellerCode
+    ...GetAllConsultores,
+    ...CountAllConsultores,
+    ...GetAllCoordenadores,
+    ...CountAllCoordenadores,
+    ...GetAllGerentes,
+    ...CountAllGerentes
 };

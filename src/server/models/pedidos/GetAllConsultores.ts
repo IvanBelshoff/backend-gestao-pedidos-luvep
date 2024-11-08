@@ -1,20 +1,16 @@
-import { Pedido, Usuario } from '../../database/entities';
+import { Pedido, Status, Usuario } from '../../database/entities';
 import { pedidoRepository } from '../../database/repositories';
-interface IPedidoUsuario extends Pedido {
-    usuario: Usuario;
-}
 
-export const getAll = async (
-    page?: number,
-    limit?: number,
-    filter?: string): Promise<Pedido[] | Error> => {
+export const getAllConsultores = async (id: number, page?: number, limit?: number, filter?: string): Promise<Pedido[] | Error> => {
     try {
 
         const result = pedidoRepository.createQueryBuilder('pedido')
             .leftJoinAndSelect('pedido.justificativas', 'justificativa')
-            .leftJoinAndMapOne('pedido.usuario', Usuario, 'usuario', 'pedido.vendedor = usuario.codigo_vendedor')
             .addOrderBy('justificativa.id', 'ASC')
-            .orderBy('pedido.id', 'DESC');
+            .orderBy('pedido.id', 'DESC')
+            .leftJoinAndSelect(Usuario, 'usuario', 'pedido.vendedor = usuario.codigo_vendedor')
+            .where('usuario.id = :id', { id })
+            .andWhere('pedido.status = :status', { status: Status.ABER });
 
         if (page && typeof page == 'string' && limit && typeof limit == 'string') {
             result.take(page * limit);
@@ -27,7 +23,7 @@ export const getAll = async (
 
         const pedidos = await result.getMany();
 
-        return pedidos as IPedidoUsuario[];
+        return pedidos;
 
     } catch (error) {
         console.log(error);

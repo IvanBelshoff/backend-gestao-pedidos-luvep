@@ -1,14 +1,12 @@
-import { Status } from '../../database/entities';
+import { Status, Usuario } from '../../database/entities';
 import { pedidoRepository } from '../../database/repositories';
 
-export const countBySellerCode = async (cod_vendedor?: string, filter?: string): Promise<number | Error> => {
+export const countAllConsultores = async (id: number, filter?: string): Promise<number | Error> => {
     try {
 
         const result = pedidoRepository.createQueryBuilder('pedido')
-            .leftJoinAndSelect('pedido.justificativas', 'justificativa')
-            .addOrderBy('justificativa.id', 'ASC')
-            .orderBy('pedido.id', 'DESC')
-            .where('pedido.vendedor = :vendedor', { vendedor: cod_vendedor })
+            .leftJoinAndSelect(Usuario, 'usuario', 'pedido.vendedor = usuario.codigo_vendedor')
+            .where('usuario.id = :id', { id })
             .andWhere('pedido.status = :status', { status: Status.ABER });
 
         if (typeof filter === 'string') {
