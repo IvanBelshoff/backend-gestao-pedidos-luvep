@@ -10,8 +10,8 @@ export class Justificativa {
     @Column({ type: 'text', nullable: false })
     conteudo: string
 
-    @Column({ nullable: true, type: "date" })
-    data_previsao?: Date | null;
+    @Column({ type: "date" })
+    data_previsao: Date;
 
     @CreateDateColumn({ nullable: false, type: "date" })
     data_criacao: Date
